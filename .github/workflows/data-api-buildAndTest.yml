@@ -1,0 +1,13 @@
+name: Data API Build and Test
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v6
+      
