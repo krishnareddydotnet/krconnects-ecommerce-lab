@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: authapi
+  name: auth-api
 spec:
   selector:
     matchLabels:
-      app: authapi
+      app: auth-api
   template:
     metadata:
       labels:
-        app: authapi
+        app: auth-api
     spec:
       containers:
-      - name: authapi
-        image: authapi:v1.0.0
+      - name: auth-api
+        image: auth-api:v1.0.0
         resources:
           limits:
             memory: "128Mi"
@@ -29,10 +29,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: authapi
+  name: auth-api
 spec:
   selector:
-    app: authapi
+    app: auth-api
   ports:
   - port: 8080
     targetPort: 8080

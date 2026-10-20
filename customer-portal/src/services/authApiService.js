@@ -13,7 +13,7 @@ const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_BASE_URL || '/api';
 
 /**
  * Calls the Auth API's /hello endpoint.
- * Browser calls: /api/hello  ->  nginx forwards to: http://authapi:8080/hello
+ * Browser calls: /api/hello  ->  nginx forwards to: http://auth-api:8080/hello
  */
 export async function fetchAuthApiHello() {
   const response = await fetch(`${AUTH_API_BASE_URL}/hello`);
