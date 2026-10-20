@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: catalog-api
-        image: catalog-api:v1.1.0
+        image: catalog-api:v1.0.0
         resources:
           limits:
             memory: "5012Mi"
