@@ -1,0 +1,87 @@
+# -----------------------------------------------------------------------
+# KRConnects E-commerce - SQL Server (lab only)
+#
+# Runs SQL Server 2022 as a StatefulSet with its own persistent disk.
+# Later this will be replaced by Azure SQL.
+#
+# The SA password is NOT in this file (public repo!).
+# Create the Secret first from the command line:
+#   kubectl create secret generic sqlserver-secret --from-literal=MSSQL_SA_PASSWORD='<YourStrong@Passw0rd>'
+# -----------------------------------------------------------------------
+
+# Headless Service: gives the pod a stable DNS name (sqlserver-0.sqlserver)
+# Apps connect using:  sqlserver,1433
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver
+spec:
+  clusterIP: None          # headless (required by StatefulSet serviceName)
+  selector:
+    app: sqlserver
+  ports:
+  - name: sql
+    port: 1433
+    targetPort: 1433
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sqlserver
+spec:
+  serviceName: sqlserver   # must match the headless Service name above
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sqlserver
+  template:
+    metadata:
+      labels:
+        app: sqlserver
+    spec:
+      securityContext:
+        fsGroup: 10001     # SQL Server runs as user 10001 (non-root); lets it write to the disk
+      containers:
+      - name: sqlserver
+        # Tip: replace "2022-latest" with a fixed version tag from mcr.microsoft.com
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        ports:
+        - containerPort: 1433
+          name: sql
+        env:
+        - name: ACCEPT_EULA          # required: accept Microsoft's license
+          value: "Y"
+        - name: MSSQL_PID            # Developer edition = free for non-production
+          value: "Developer"
+        - name: MSSQL_SA_PASSWORD    # required: read from the Secret, not hardcoded
+          valueFrom:
+            secretKeyRef:
+              name: sqlserver-secret
+              key: MSSQL_SA_PASSWORD
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        # Pod is "ready" only when SQL Server accepts connections on 1433
+        readinessProbe:
+          tcpSocket:
+            port: 1433
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        volumeMounts:
+        - name: sqldata
+          mountPath: /var/opt/mssql  # where SQL Server stores its database files
+  # Each pod gets its own disk (PVC), which survives pod restarts
+  volumeClaimTemplates:
+  - metadata:
+      name: sqldata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 8Gi

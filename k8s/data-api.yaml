@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-api
+spec:
+  selector:
+    matchLabels:
+      app: data-api
+  template:
+    metadata:
+      labels:
+        app: data-api
+    spec:
+      containers:
+      - name: data-api
+        image: data-api:v1.0.0
+
+        env:
+          - name: ConnectionStrings__DataDb #Environment Variable for Data Database Connection String
+            valueFrom:
+              secretKeyRef:
+                name: data-api-secret # secret name
+                key: ConnectionStrings__DataDb #key in the secret that cotains the connection string for the database
+
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+        ports:
+        - containerPort: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-api
+spec:
+  selector:
+    app: data-api
+  ports:
+  - port: 8080
+    targetPort: 8080
