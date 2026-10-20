@@ -1,0 +1,22 @@
+# auth-api: .NET Web API (internal only, port 8080)
+
+fullnameOverride: auth-api   # must match nginx.conf: http://auth-api:8080
+
+image:
+  repository: auth-api
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP      # internal only
+  port: 8080
+
+livenessProbe:
+  httpGet:
+    path: /health/live
+    port: http
+
+readinessProbe:
+  httpGet:
+    path: /health/ready
+    port: http
