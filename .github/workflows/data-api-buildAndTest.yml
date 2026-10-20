@@ -16,6 +16,6 @@ jobs:
           dotnet-version: '10.0.x'
       - name: build
         run: |
-          dotnet restore data-api\DataApi.csproj
-          dotnet build DataApi\DataApi.csproj
+          dotnet restore data-api/DataApi.csproj
+          dotnet build data-api/DataApi.csproj
         
