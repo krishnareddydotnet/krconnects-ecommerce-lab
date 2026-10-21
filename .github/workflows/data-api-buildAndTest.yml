@@ -1,4 +1,4 @@
-name: Data API Build and Test
+name: Data API CI
 
 on:
   push:
