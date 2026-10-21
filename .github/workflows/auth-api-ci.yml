@@ -7,12 +7,24 @@ on:
    paths:
       - 'auth-api/**'
       - '.github/workflows/auth-api-ci.yml'
+defaults:
+  run:
+    working-directory: ./auth-api
 
 jobs:
+  
   build:
+
+  
+    runs-on: ubuntu-latest
     steps:
       - name: checkout code
         uses: actions/checkout@v6
+
+      - name: setup dotnet core
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
 
       
   
