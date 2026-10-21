@@ -1,4 +1,4 @@
-name: Data API CI
+name: data api ci
 
 on:
   push:
