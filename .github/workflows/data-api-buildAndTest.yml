@@ -7,7 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+
+  build_dotnet:
     runs-on: ubuntu-24.04
 
     defaults:
@@ -32,8 +33,8 @@ jobs:
       - name: test
         run: dotnet test
 
-  buildimage:
-    needs: build
+  build_docker:
+    needs: build_dotnet
 
    
     runs-on: ubuntu-24.04
