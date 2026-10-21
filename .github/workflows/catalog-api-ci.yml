@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'data-api/**'
+      - 'catalog-api/**'
       - '.github/workflows/catalog-api-ci.yml'
       
   workflow_dispatch:
