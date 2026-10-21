@@ -17,6 +17,10 @@ spring:
     name: krconnects-catalog-api
 
 krconnects:
+  # Where to find the Data API. Override with the DATA_API_URL environment
+  # variable; defaults to the Kubernetes Service name "data-api".
+  data-api:
+    url: ${DATA_API_URL:http://data-api:8080}
   keyvault:
     uri: https://krconnects-kv.vault.azure.net/
   service-info:

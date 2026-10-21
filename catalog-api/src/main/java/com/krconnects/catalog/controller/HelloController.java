@@ -2,8 +2,13 @@ package com.krconnects.catalog.controller;
 
 import com.krconnects.catalog.model.HelloResponse;
 import com.krconnects.catalog.service.CatalogInfoService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
+
+import java.time.Instant;
 
 @RestController
 public class HelloController {
@@ -28,10 +33,21 @@ public class HelloController {
         return catalogInfoService.getHello();
     }
 
-    // GET /products - dummy but meaningful product data, standing in for
-    // a real Cosmos DB-backed catalog query.
+    // GET /products - products from the database, via the Data API.
+    // If the Data API is down, return 503 (Service Unavailable) with a clear
+    // message instead of a confusing 500 error.
     @GetMapping("/products")
-    public HelloResponse products() {
-        return catalogInfoService.getProducts();
+    public ResponseEntity<HelloResponse> products() {
+        try {
+            return ResponseEntity.ok(catalogInfoService.getProducts());
+        } catch (RestClientException ex) {
+            HelloResponse error = new HelloResponse(
+                    "Product data is temporarily unavailable (Data API unreachable).",
+                    "krconnects-catalog-api",
+                    Instant.now().toString(),
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+        }
     }
 }
