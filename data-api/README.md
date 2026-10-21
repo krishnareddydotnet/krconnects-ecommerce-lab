@@ -16,6 +16,11 @@ It is the **only** service that talks to SQL Server. Other services (auth-api, l
 | PUT | `/users/{id}` | Update username |
 | DELETE | `/users/{id}` | Delete user |
 | POST | `/users/verify` | Check username + userKey (login) |
+| GET | `/products` | List all products (`?search=desk` filters by name or category) |
+| GET | `/products/{id}` | Get one product |
+| POST | `/products` | Create product |
+| PUT | `/products/{id}` | Update product |
+| DELETE | `/products/{id}` | Delete product |
 
 ## Configuration
 
@@ -28,7 +33,10 @@ Example value (Kubernetes, SQL Server StatefulSet):
 Server=sqlserver,1433;Database=KRConnectsEcommerce;User Id=sa;Password=<password>;Encrypt=True;TrustServerCertificate=True;
 ```
 
-On startup the app creates the `KRConnectsEcommerce` database and the `Users` table if they don't exist.
+On startup the app:
+1. Creates the `KRConnectsEcommerce` database (with `Users` and `Products` tables) if it doesn't exist.
+2. Creates the `Products` table if it is missing (for databases created before products were added).
+3. Loads 100 demo products if the `Products` table is empty.
 
 ## Port
 

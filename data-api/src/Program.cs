@@ -1,7 +1,8 @@
 // -----------------------------------------------------------------------
 // KRConnects Data API
 // The ONLY service that talks to the database. Other services (auth-api,
-// later orders) call this API instead of connecting to SQL Server directly.
+// catalog-api, later orders) call this API instead of connecting to
+// SQL Server directly.
 //
 // Connection string comes from configuration key "ConnectionStrings:DataDb".
 // In Kubernetes it is injected as the environment variable
@@ -27,15 +28,17 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DataDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ProductService>();
 
 var app = builder.Build();
 
-// 3. Create the database and tables if they don't exist yet.
-//    SQL Server may still be starting, so retry a few times before giving up.
+// 3. Prepare the database
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<DataDbContext>();
 
+    // 3a. Create the database and tables if the DATABASE doesn't exist yet.
+    //     SQL Server may still be starting, so retry a few times before giving up.
     for (int attempt = 1; attempt <= 10; attempt++)
     {
         try
@@ -55,6 +58,29 @@ using (var scope = app.Services.CreateScope())
 
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
+    }
+
+    // 3b. IMPORTANT: EnsureCreated() does NOTHING if the database already exists.
+    //     Our database was created earlier with only the Users table, so we
+    //     add the Products table ourselves if it is missing.
+    //     (Real projects use "EF Core Migrations" for schema changes like this.)
+    db.Database.ExecuteSqlRaw(@"
+        IF OBJECT_ID(N'dbo.Products', N'U') IS NULL
+        BEGIN
+            CREATE TABLE dbo.Products (
+                Id       INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                Name     NVARCHAR(100)     NOT NULL,
+                Category NVARCHAR(50)      NOT NULL,
+                Price    DECIMAL(10,2)     NOT NULL
+            );
+        END");
+
+    // 3c. Load the 100 demo products, only if the table is empty
+    if (!db.Products.Any())
+    {
+        db.Products.AddRange(ProductSeedData.GetProducts());
+        db.SaveChanges();
+        app.Logger.LogInformation("Seeded 100 demo products.");
     }
 }
 
