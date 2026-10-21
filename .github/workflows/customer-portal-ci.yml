@@ -42,10 +42,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
       - name: build docker image
-        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/customer-portal:v1.0.1
+        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/customer-portal:v1.0.0
 
       - name: docker push
-        run: docker push -t ${{secrets.DOCKERHUB_USERNAME}}/customer-portal:v1.0.1 
+        run: docker push -t ${{secrets.DOCKERHUB_USERNAME}}/customer-portal:v1.0.0 
           
         
       
