@@ -6,7 +6,30 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: customer-portal
+        
     steps:
       - name: checkout code
         uses: actions/checkout@v6
+
+      - name: setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: install dependency packages
+        run: npm ci
+
+      - name: test
+        run: npm test
+
+      - name: generate production files
+        run: npm run build 
+
+
+      - name: 
+        run: ls
       
