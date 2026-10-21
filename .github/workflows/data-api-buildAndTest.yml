@@ -32,4 +32,21 @@ jobs:
       - name: test
         run: dotnet test
 
+  buildimage:
+    runs-on: ubuntu-24.04
+
+    defaults:
+      run:
+        working-directory: ./data-api
+
+    steps:
+      - name: checkout code
+        run: actions/checkout@v6.0.0
+
+      - name: docker setup
+        run: docker/setup-docker-action@v5
+
+      - name: docker build
+        run: docker build -t data-api .
+
         
