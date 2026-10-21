@@ -35,9 +35,6 @@ jobs:
   buildimage:
     runs-on: ubuntu-24.04
 
-    defaults:
-      run:
-        working-directory: ./data-api
 
     steps:
       - name: checkout code
