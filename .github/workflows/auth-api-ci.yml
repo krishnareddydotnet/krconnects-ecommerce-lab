@@ -26,5 +26,16 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Downloads the NuGet packages
+        run: dotnet restore AuthApi.csproj
+
+      - name: Compiles the API
+        run: dotnet build AuthApi.csproj --no-restore -c Release
+
+      - name: test
+        run: dotnet test tests/AuthApi.Tests/AuthApi.Tests.csproj
+
+        
+
       
   
