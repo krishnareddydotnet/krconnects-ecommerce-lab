@@ -3,7 +3,7 @@
 fullnameOverride: catalog-api   # must match nginx.conf: http://catalog-api:8081
 
 image:
-  repository: catalog-api
+  repository: ckreddy3030/catalog-api
   tag: v1.0.0
   pullPolicy: IfNotPresent
 

@@ -3,7 +3,7 @@
 fullnameOverride: auth-api   # must match nginx.conf: http://auth-api:8080
 
 image:
-  repository: auth-api
+  repository: ckreddy3030/auth-api
   tag: v1.0.0
   pullPolicy: IfNotPresent
 

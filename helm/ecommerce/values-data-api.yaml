@@ -3,7 +3,7 @@
 fullnameOverride: data-api   # must match nginx.conf: http://data-api:8080
 
 image:
-  repository: data-api
+  repository: ckreddy3030/data-api
   tag: v1.0.0
   pullPolicy: IfNotPresent
 
