@@ -1,5 +1,8 @@
 name: auth api ci
 
+permissions: 
+  contents: read
+
 on:
   push:
    branches:
@@ -17,7 +20,6 @@ env:
 jobs:
   
   build:
-
   
     runs-on: ubuntu-latest
     steps:
