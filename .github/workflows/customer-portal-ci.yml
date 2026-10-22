@@ -1,4 +1,8 @@
 name: customer portal ci
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:
