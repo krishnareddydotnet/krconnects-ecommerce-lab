@@ -39,7 +39,7 @@ jobs:
     # FIX: token at JOB level, so EVERY step below can use it
     env:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      SNYK_CFG_ORG: krishnareddydotnet
+      SNYK_CFG_ORG: ${{vars.SNYK_CFG_ORG}}
     
     steps:
       - uses: actions/checkout@v4
