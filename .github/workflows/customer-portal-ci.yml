@@ -1,7 +1,7 @@
 name: customer portal ci
 
 permissions:
-  contents: read
+  contents: write  # for pushing updated Helm values file back to the repo
 
 on:
   push:
