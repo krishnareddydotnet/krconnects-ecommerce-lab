@@ -100,7 +100,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ steps.IMAGE_TAG.outputs.tag }}
         run: |
-          sed -i -E "s/^([[:space:]]*tag:).*/\1 \"$IMAGE_TAG\"/" helm/ecommerce/values-data-api.yaml
+          sed -i -E "s/^([[:space:]]*tag:).*/\1 \"$IMAGE_TAG\"/" ../helm/ecommerce/values-data-api.yaml
       
       - name: Commit and push Helm values
         shell: bash
