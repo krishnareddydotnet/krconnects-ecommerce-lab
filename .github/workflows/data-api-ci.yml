@@ -95,6 +95,27 @@ jobs:
       - name: docker push
         run: docker push ${{secrets.DOCKERHUB_USERNAME}}/data-api:${{steps.IMAGE_TAG.outputs.tag}}
 
+      - name: Update Helm image tag
+        shell: bash
+        env:
+          IMAGE_TAG: ${{ steps.IMAGE_TAG.outputs.tag }}
+        run: |
+          sed -i -E "s/^([[:space:]]*tag:).*/\1 \"$IMAGE_TAG\"/" helm/ecommerce/values-data-api.yaml
+      
+      - name: Commit and push Helm values
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      
+          git add helm/ecommerce/values-data-api.yaml
+      
+          git diff --cached --quiet && exit 0
+      
+          git commit -m "chore: update data-api image tag"
+          git push
+        
+
 
 
         
