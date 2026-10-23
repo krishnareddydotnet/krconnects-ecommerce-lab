@@ -74,13 +74,18 @@ jobs:
 #      - name: docker setup
 #        uses: docker/setup-docker-action@v5
 
+
+      - name: generate git sha
+        id: IMAGE_TAG
+        run: echo "tag=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT" 
+
       - name: docker build
-        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/data-api:${{env.IMAGE_TAG}} .
+        run: docker build -t ${{secrets.DOCKERHUB_USERNAME}}/data-api:${{steps.IMAGE_TAG.outputs.tag}} .
 
       - name: Scan container image
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-         image-ref: '${{secrets.DOCKERHUB_USERNAME}}/data-api:${{env.IMAGE_TAG}}'
+         image-ref: '${{secrets.DOCKERHUB_USERNAME}}/data-api:${{steps.IMAGE_TAG.outputs.tag}}'
          format: 'table'
          exit-code: '1'
          ignore-unfixed: true
@@ -88,7 +93,7 @@ jobs:
          severity: 'CRITICAL,HIGH'
 
       - name: docker push
-        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/data-api:${{env.IMAGE_TAG}}
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/data-api:${{steps.IMAGE_TAG.outputs.tag}}
 
 
 
