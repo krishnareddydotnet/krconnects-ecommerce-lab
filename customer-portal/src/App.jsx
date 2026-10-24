@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { fetchProducts } from './services/catalogApiService.js';
+import { signup, login, fetchMe, getSavedToken, saveToken, clearToken } from './services/authApiService.js';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
 import LoginDialog from './components/LoginDialog.jsx';
@@ -37,9 +38,8 @@ function App() {
   // ----- Cart: { productId: quantity }, e.g. { 3: 2, 7: 1 } -----
   const [cartItems, setCartItems] = useState({});
 
-  // ----- Login / sign up (DEMO ONLY: kept in memory, lost on refresh) -----
-  // Later: Sign up -> POST /api/signup, Log in -> POST /api/login (auth-api)
-  const [demoUsers, setDemoUsers] = useState({}); // { username: userKey }
+  // ----- Logged-in user: { id, username } or null -----
+  // Sign up / log in go to the Auth API, which uses the Data API (database).
   const [currentUser, setCurrentUser] = useState(null);
   const [openDialog, setOpenDialog] = useState(null); // null | 'login' | 'signup'
 
@@ -54,6 +54,17 @@ function App() {
       .then((list) => setProducts(list))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Keep the user logged in after a page refresh:
+  // if a token was saved earlier, ask the Auth API who it belongs to.
+  useEffect(() => {
+    const token = getSavedToken();
+    if (!token) return;
+
+    fetchMe(token)
+      .then((user) => setCurrentUser(user))
+      .catch(() => clearToken());   // expired or invalid token -> forget it
   }, []);
 
   // Show a toast for 2 seconds
@@ -78,28 +89,34 @@ function App() {
       : `${product.name} added to cart`);
   }
 
-  // Returns { userKey } on success or { error } on failure
-  function handleSignup(username) {
-    if (demoUsers[username]) {
-      return { error: 'That username is already taken.' };
+  // Sign up: the user is saved in the database (only if the username is new).
+  // Returns { userKey } on success or { error } on failure.
+  async function handleSignup(username) {
+    try {
+      const result = await signup(username);
+      return { userKey: result.userKey };
+    } catch (err) {
+      return { error: err.message };   // e.g. "That username is already taken."
     }
-    const userKey = crypto.randomUUID(); // in the real app data-api generates this
-    setDemoUsers({ ...demoUsers, [username]: userKey });
-    return { userKey };
   }
 
-  // Returns an error message, or null when login worked
-  function handleLogin(username, userKey) {
-    if (demoUsers[username] !== userKey) {
-      return 'Invalid username or user key.';
+  // Log in: get a token, save it, and show the user as logged in.
+  // Returns an error message, or null when login worked.
+  async function handleLogin(username, userKey) {
+    try {
+      const result = await login(username, userKey);
+      saveToken(result.token);
+      setCurrentUser({ username: result.username });
+      setOpenDialog(null);
+      showToast('Welcome back, ' + result.username);
+      return null;
+    } catch (err) {
+      return err.message;              // e.g. "Invalid username or user key."
     }
-    setCurrentUser({ username });
-    setOpenDialog(null);
-    showToast('Welcome back, ' + username);
-    return null;
   }
 
   function handleLogout() {
+    clearToken();
     setCurrentUser(null);
     showToast('You are logged out');
   }

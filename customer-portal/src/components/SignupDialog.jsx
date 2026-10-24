@@ -4,15 +4,19 @@ import Modal from './Modal.jsx';
 // SignupDialog has 2 steps:
 //   Step 1: pick a username
 //   Step 2: show the generated user key ONCE
-// onSignup returns { userKey } if it worked, or { error } if not.
+// onSignup is async: it returns { userKey } if it worked, or { error } if not.
 function SignupDialog({ onSignup, onCopyKey, onClose }) {
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
   const [userKey, setUserKey] = useState(null); // null = still on step 1
+  const [busy, setBusy] = useState(false);       // true while waiting for the Auth API
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    const result = onSignup(username.trim());
+    setBusy(true);
+    setError('');
+    const result = await onSignup(username.trim());
+    setBusy(false);
     if (result.error) {
       setError(result.error);
     } else {
@@ -51,7 +55,9 @@ function SignupDialog({ onSignup, onCopyKey, onClose }) {
 
         <div className="dialog-actions">
           <button className="btn btn-ghost" type="button" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" type="submit">Sign up</button>
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {busy ? 'Signing up…' : 'Sign up'}
+          </button>
         </div>
       </form>
     </Modal>

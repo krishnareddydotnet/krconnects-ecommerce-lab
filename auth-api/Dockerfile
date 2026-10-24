@@ -21,4 +21,7 @@ EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
+# Run as the built-in non-root user of the .NET image (UID 1654)
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "AuthApi.dll"]

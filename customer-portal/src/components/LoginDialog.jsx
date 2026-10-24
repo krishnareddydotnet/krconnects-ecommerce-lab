@@ -2,15 +2,19 @@ import { useState } from 'react';
 import Modal from './Modal.jsx';
 
 // LoginDialog: username + user key.
-// onLogin returns an error message (string) if login fails, or null if it worked.
+// onLogin is async: it returns an error message (string) if login fails, or null if it worked.
 function LoginDialog({ onLogin, onClose }) {
   const [username, setUsername] = useState('');
   const [userKey, setUserKey] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);   // true while waiting for the Auth API
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();               // stop the browser reloading the page
-    const result = onLogin(username.trim(), userKey.trim());
+    setBusy(true);
+    setError('');
+    const result = await onLogin(username.trim(), userKey.trim());
+    setBusy(false);
     if (result) setError(result);         // show the error, keep the dialog open
   }
 
@@ -35,7 +39,9 @@ function LoginDialog({ onLogin, onClose }) {
 
         <div className="dialog-actions">
           <button className="btn btn-ghost" type="button" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" type="submit">Log in</button>
+          <button className="btn btn-primary" type="submit" disabled={busy}>
+            {busy ? 'Logging in…' : 'Log in'}
+          </button>
         </div>
       </form>
     </Modal>
