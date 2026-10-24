@@ -5,7 +5,7 @@ fullnameOverride: customer-portal
 
 image:
   repository: ckreddy3030/customer-portal
-  tag: "2b8f5eb"
+  tag: "befd61b"
   pullPolicy: IfNotPresent
 
 service:
