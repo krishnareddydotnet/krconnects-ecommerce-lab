@@ -1,0 +1,172 @@
+/* KRConnects e-commerce — storefront styles (Option 1: Clean storefront).
+   Copied from the HTML prototype. Imported once in main.jsx. */
+
+/* ---------- Design tokens (colors, sizes) ---------- */
+:root {
+  --accent: #3730A3;        /* indigo: buttons, active chip */
+  --accent-dark: #1E1B4B;
+  --accent-soft: #EEF2FF;   /* light indigo: category tags */
+  --text: #111827;
+  --muted: #4B5563;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --bg: #FFFFFF;
+  --bg-soft: #F9FAFB;
+  --image-bg: #F3F4F6;
+  --success: #15803D;
+  --radius: 16px;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* "hidden" always wins over display rules */
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+a { color: var(--accent); }
+a:hover { color: var(--accent-dark); }
+button, input, select { font: inherit; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  height: 44px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid transparent; cursor: pointer;
+  font-size: 15px; font-weight: 600;
+}
+.btn-primary { background: var(--accent); color: #FFFFFF; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-ghost { background: transparent; color: var(--text); border-color: transparent; }
+.btn-ghost:hover { background: var(--bg-soft); }
+.btn-outline { background: #FFFFFF; color: var(--text); border-color: var(--border-strong); }
+.btn:focus-visible, .chip:focus-visible, .icon-btn:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #A5B4FC; outline-offset: 2px;
+}
+
+/* ---------- Header ---------- */
+.header { border-bottom: 1px solid var(--border); background: #FFFFFF; position: sticky; top: 0; z-index: 10; }
+.header-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-top: 14px; padding-bottom: 14px; }
+.logo { font-size: 22px; font-weight: 700; color: var(--text); text-decoration: none; letter-spacing: -0.02em; }
+.logo { display: flex; flex-direction: column; line-height: 1.1; }
+.logo .brand-accent { color: var(--accent); }
+.logo .tagline { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.search {
+  flex: 1 1 300px; display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border-strong); border-radius: 999px; padding: 0 16px; height: 44px;
+}
+.search input { flex: 1; border: 0; outline: none; font-size: 15px; background: transparent; color: var(--text); min-width: 0; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  position: relative; width: 44px; height: 44px; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: #FFFFFF; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.badge {
+  position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px; background: var(--accent); color: #FFFFFF;
+  font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.welcome { font-size: 14px; color: var(--muted); }
+
+/* ---------- Page intro ---------- */
+main.container { padding-top: 32px; padding-bottom: 56px; display: flex; flex-direction: column; gap: 24px; }
+.intro h1 { margin: 0; font-size: 32px; letter-spacing: -0.02em; }
+.intro p { margin: 6px 0 0; color: var(--muted); font-size: 16px; }
+
+/* ---------- Category bar ---------- */
+.categories { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip {
+  height: 40px; padding: 0 16px; border-radius: 999px; cursor: pointer;
+  font-size: 14px; font-weight: 500;
+  background: #FFFFFF; color: var(--text); border: 1px solid var(--border-strong);
+}
+.chip[aria-pressed="true"] { background: var(--accent); color: #FFFFFF; border-color: var(--accent); }
+
+/* ---------- Toolbar ---------- */
+.toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+.toolbar h2 { margin: 0; font-size: 22px; }
+.toolbar-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.count { margin: 0; font-size: 14px; color: var(--muted); }
+.sort { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); }
+.sort select { height: 40px; border: 1px solid var(--border-strong); border-radius: 10px; padding: 0 10px; background: #FFFFFF; color: var(--text); }
+
+/* ---------- Product grid + card ---------- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
+.card {
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+  display: flex; flex-direction: column; background: #FFFFFF;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.card:hover { box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08); transform: translateY(-2px); }
+.card-image {
+  height: 170px; background: var(--image-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; font-weight: 700; color: #9CA3AF;
+}
+.card-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.tag {
+  align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--accent);
+  background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+}
+.card h3 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.35; }
+.price { margin: 0; font-size: 18px; font-weight: 700; }
+.card .btn { margin-top: auto; border-radius: 10px; width: 100%; }
+.card .btn.added { background: var(--success); }
+
+/* ---------- Empty state ---------- */
+.empty { text-align: center; padding: 48px 16px; border: 1px dashed var(--border-strong); border-radius: var(--radius); color: var(--muted); }
+.empty h2 { margin: 0 0 6px; font-size: 20px; color: var(--text); }
+
+/* ---------- Login / Sign up forms ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input { height: 44px; border: 1px solid var(--border-strong); border-radius: 10px; padding: 0 12px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.message { font-size: 14px; margin: 0 0 12px; }
+.message.error { color: #B91C1C; }
+.key-box {
+  font-family: Consolas, "Courier New", monospace; font-size: 14px; word-break: break-all;
+  background: var(--accent-soft); color: var(--accent-dark); padding: 12px; border-radius: 10px; margin: 0 0 12px;
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+  background: var(--text); color: #FFFFFF; padding: 12px 18px; border-radius: 999px;
+  font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+.toast.show { opacity: 1; }
+
+/* ---------- Modal (React version of <dialog>) ---------- */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(17, 24, 39, 0.45);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.modal {
+  width: min(420px, 100%); background: #FFFFFF; border-radius: 20px; padding: 28px;
+  box-shadow: 0 24px 64px rgba(17, 24, 39, 0.25);
+}
+.modal h2 { margin: 0 0 4px; font-size: 22px; }
+.modal .hint { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+
+/* ---------- Loading / error ---------- */
+.status { text-align: center; padding: 48px 16px; color: var(--muted); }
+.status.error { color: #B91C1C; border: 1px dashed #FCA5A5; border-radius: var(--radius); }
+
+/* ---------- Footer ---------- */
+.footer { border-top: 1px solid var(--border); background: var(--bg-soft); }
+.footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-top: 24px; padding-bottom: 24px; font-size: 14px; color: var(--muted); }
+.footer a { color: var(--muted); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 600px) {
+  .intro h1 { font-size: 26px; }
+  .header-actions .welcome { display: none; }
+}
