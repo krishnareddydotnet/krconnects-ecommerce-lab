@@ -40,7 +40,8 @@ function Header({ searchText, onSearchChange, currentUser, cartCount, onLoginCli
             </>
           )}
 
-          <button className="icon-btn" type="button" aria-label={`Cart, ${cartCount} items`}>
+          {/* Cart icon opens the cart page */}
+          <Link to="/cart" className="icon-btn" aria-label={`Cart, ${cartCount} items`}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"></path>
               <circle cx="10" cy="20" r="1.2"></circle>
@@ -48,7 +49,7 @@ function Header({ searchText, onSearchChange, currentUser, cartCount, onLoginCli
             </svg>
             {/* Badge only when the cart has something in it */}
             {cartCount > 0 && <span className="badge">{cartCount}</span>}
-          </button>
+          </Link>
         </div>
       </div>
     </header>

@@ -54,7 +54,7 @@ describe('ProductDetailsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add to cart' }));
 
-    expect(screen.getByRole('button', { name: 'Cart, 3 items' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cart, 3 items' })).toBeInTheDocument();
   });
 
   it('does not go below quantity 1', async () => {
@@ -64,7 +64,7 @@ describe('ProductDetailsPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Decrease quantity' }));
     fireEvent.click(screen.getByRole('button', { name: 'Add to cart' }));
 
-    expect(screen.getByRole('button', { name: 'Cart, 1 items' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cart, 1 items' })).toBeInTheDocument();
   });
 
   it('shows "Product not found" for an unknown id', async () => {

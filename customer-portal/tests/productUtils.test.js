@@ -48,3 +48,4 @@ describe('getSimilarProducts', () => {
     expect(result.map((p) => p.id)).toEqual([4]);
   });
 });
+

@@ -10,6 +10,9 @@ import Toast from './components/Toast.jsx';
 import HomePage from './pages/HomePage.jsx';
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
+import CartPage from './pages/CartPage.jsx';
+import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx';
+import { MAX_QUANTITY, loadCart, saveCart } from './utils/cartUtils.js';
 
 // -----------------------------------------------------------------------
 // App = the whole site.
@@ -17,6 +20,8 @@ import NotFoundPage from './pages/NotFoundPage.jsx';
 // - <Routes> picks the page from the URL:
 //     /             -> HomePage (product grid)
 //     /product/:id  -> ProductDetailsPage (one product)
+//     /cart         -> CartPage
+//     /order-confirmation -> OrderConfirmationPage
 //     anything else -> NotFoundPage
 // - Shared state (products, cart, user) lives here, so it is kept
 //   when the user moves between pages.
@@ -36,7 +41,11 @@ function App() {
   const [sortBy, setSortBy] = useState('featured');
 
   // ----- Cart: { productId: quantity }, e.g. { 3: 2, 7: 1 } -----
-  const [cartItems, setCartItems] = useState({});
+  // Starts from the cart saved in the browser, so a refresh keeps it.
+  const [cartItems, setCartItems] = useState(() => loadCart());
+
+  // ----- Last placed order (shown on the confirmation page) -----
+  const [lastOrder, setLastOrder] = useState(null);
 
   // ----- Logged-in user: { id, username } or null -----
   // Sign up / log in go to the Auth API, which uses the Data API (database).
@@ -55,6 +64,11 @@ function App() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  // Save the cart in the browser every time it changes
+  useEffect(() => {
+    saveCart(cartItems);
+  }, [cartItems]);
 
   // Keep the user logged in after a page refresh:
   // if a token was saved earlier, ask the Auth API who it belongs to.
@@ -80,13 +94,38 @@ function App() {
     if (location.pathname !== '/') navigate('/');
   }
 
-  // Add a quantity of a product to the cart (adds to what is already there)
+  // Add a quantity of a product to the cart (adds to what is already there, max 10)
   function handleAddToCart(product, quantity) {
     const current = cartItems[product.id] || 0;
-    setCartItems({ ...cartItems, [product.id]: current + quantity });
+    setCartItems({ ...cartItems, [product.id]: Math.min(MAX_QUANTITY, current + quantity) });
     showToast(quantity > 1
       ? `${quantity} × ${product.name} added to cart`
       : `${product.name} added to cart`);
+  }
+
+  // Cart page +/- buttons. Quantity 0 removes the product.
+  function handleQuantityChange(productId, quantity) {
+    if (quantity <= 0) {
+      const updated = { ...cartItems };   // copy the cart
+      delete updated[productId];          // take this product out
+      setCartItems(updated);
+      return;
+    }
+    setCartItems({ ...cartItems, [productId]: Math.min(MAX_QUANTITY, quantity) });
+  }
+
+  function handleRemoveFromCart(product) {
+    handleQuantityChange(product.id, 0);
+    showToast(product.name + ' removed from cart');
+  }
+
+  // DEMO: no order-api yet, so we only make an order number, empty the cart
+  // and show the confirmation page. Later: POST /order-api/orders.
+  function handlePlaceOrder(lines, summary) {
+    const orderNumber = 'KR' + Date.now().toString().slice(-8);
+    setLastOrder({ orderNumber, username: currentUser.username, lines, summary });
+    setCartItems({});
+    navigate('/order-confirmation');
   }
 
   // Sign up: the user is saved in the database (only if the username is new).
@@ -169,6 +208,21 @@ function App() {
             />
           }
         />
+        <Route
+          path="/cart"
+          element={
+            <CartPage
+              products={products}
+              cartItems={cartItems}
+              currentUser={currentUser}
+              onQuantityChange={handleQuantityChange}
+              onRemove={handleRemoveFromCart}
+              onLoginClick={() => setOpenDialog('login')}
+              onPlaceOrder={handlePlaceOrder}
+            />
+          }
+        />
+        <Route path="/order-confirmation" element={<OrderConfirmationPage order={lastOrder} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     );

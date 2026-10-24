@@ -92,7 +92,7 @@ describe('App (storefront)', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Add to cart' })[0]);
 
-    expect(screen.getByRole('button', { name: 'Cart, 1 items' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Cart, 1 items' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Added ✓' })).toBeInTheDocument();
   });
 
