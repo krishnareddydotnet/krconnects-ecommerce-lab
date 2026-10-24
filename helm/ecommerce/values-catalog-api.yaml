@@ -7,6 +7,13 @@ image:
   tag: "fd0c3a3"
   pullPolicy: IfNotPresent
 
+env:
+  # Base URL for product images. The database stores only the path
+  # (e.g. products/wireless-mouse.webp); catalog-api adds this base.
+  # Later with Front Door: "https://www.krconnects.com/images/"
+  - name: IMAGES_BASE_URL
+    value: "https://stkrcimagesdevcin001.blob.core.windows.net/"
+
 service:
   type: ClusterIP
   port: 8081

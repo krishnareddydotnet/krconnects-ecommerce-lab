@@ -432,3 +432,11 @@ FodyWeavers.xsd
 *.zip
 
 *.rar
+
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+
+/infra/

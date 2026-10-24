@@ -2,14 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App.jsx';
-
-const sampleResponse = {
-  products: [
-    { id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599 },
-    { id: 2, name: 'Standing Desk', category: 'Furniture', price: 5199 },
-    { id: 3, name: 'Noise Cancelling Headphones', category: 'Electronics', price: 1799 }
-  ]
-};
+import { fakeFetch } from './fakeApi.js';
 
 // Open the site directly on a URL, like typing it in the browser
 function renderAt(url) {
@@ -22,26 +15,25 @@ function renderAt(url) {
 
 describe('ProductDetailsPage', () => {
   beforeEach(() => {
-    global.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => sampleResponse });
+    global.fetch = vi.fn(fakeFetch);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('shows the product name, price and category from the URL id', async () => {
+  it('loads the product from the API by the id in the URL', async () => {
     renderAt('/product/3');
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Noise Cancelling Headphones' })).toBeInTheDocument();
     expect(screen.getByText('₹1,799.00')).toBeInTheDocument();
-    expect(screen.getByText('Product ID 3', { exact: false })).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith('/catalog-api/products/3');
   });
 
-  it('shows similar products from the same category', async () => {
+  it('shows similar products from the same category (not itself)', async () => {
     renderAt('/product/3');
-    await screen.findByRole('heading', { level: 1 });
 
-    expect(screen.getByRole('heading', { name: 'Similar products' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Similar products' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Wireless Mouse/ })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Standing Desk/ })).not.toBeInTheDocument();
   });

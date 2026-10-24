@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App.jsx';
+import { fakeFetch } from './fakeApi.js';
 
 // App uses routes, so tests wrap it in MemoryRouter (a router without a real browser URL).
-// "url" is the page to start on, e.g. '/' or '/product/2'.
 function renderApp(url = '/') {
   return render(
     <MemoryRouter initialEntries={[url]}>
@@ -13,21 +13,9 @@ function renderApp(url = '/') {
   );
 }
 
-// Same shape as the real Catalog API /products response
-const sampleResponse = {
-  message: 'KRConnects Catalog API',
-  service: 'krconnects-catalog-api',
-  timestamp: '2026-10-24T03:00:00.000Z',
-  products: [
-    { id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599 },
-    { id: 2, name: 'Standing Desk', category: 'Furniture', price: 5199 },
-    { id: 3, name: 'Noise Cancelling Headphones', category: 'Electronics', price: 1799 }
-  ]
-};
-
-describe('App (storefront)', () => {
+describe('App (storefront home page)', () => {
   beforeEach(() => {
-    global.fetch = vi.fn();
+    global.fetch = vi.fn(fakeFetch);
   });
 
   afterEach(() => {
@@ -35,22 +23,38 @@ describe('App (storefront)', () => {
   });
 
   it('shows the loading message first', () => {
-    global.fetch.mockReturnValue(new Promise(() => {})); // never resolves
+    global.fetch = vi.fn(() => new Promise(() => {})); // never answers
     renderApp();
     expect(screen.getByText('Loading products...')).toBeInTheDocument();
   });
 
-  it('shows products and prices from the Catalog API', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
+  it('shows the first page of products with prices and the page count', async () => {
     renderApp();
 
     expect(await screen.findByText('Wireless Mouse')).toBeInTheDocument();
     expect(screen.getByText('₹1,599.00')).toBeInTheDocument();
-    expect(screen.getByText('Showing 3 of 3 products')).toBeInTheDocument();
+    expect(screen.getByText('Showing 1–24 of 30 products')).toBeInTheDocument();
+  });
+
+  it('asks the API for page 1 with 24 products', async () => {
+    renderApp();
+    await screen.findByText('Wireless Mouse');
+
+    expect(global.fetch).toHaveBeenCalledWith('/catalog-api/products/paged?page=1&pageSize=24&sort=featured');
+  });
+
+  it('page 2 button loads the next page', async () => {
+    renderApp();
+    await screen.findByText('Wireless Mouse');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Page 2' }));
+
+    expect(await screen.findByText('Showing 25–30 of 30 products')).toBeInTheDocument();
+    expect(screen.queryByText('Wireless Mouse')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('filters products when the user types in the search box', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
     renderApp();
     await screen.findByText('Wireless Mouse');
 
@@ -58,23 +62,21 @@ describe('App (storefront)', () => {
       target: { value: 'desk' }
     });
 
+    expect(await screen.findByText('Showing 1–1 of 1 products')).toBeInTheDocument();
     expect(screen.getByText('Standing Desk')).toBeInTheDocument();
-    expect(screen.queryByText('Wireless Mouse')).not.toBeInTheDocument();
   });
 
   it('filters products when a category chip is clicked', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
     renderApp();
     await screen.findByText('Wireless Mouse');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Furniture' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Furniture' }));
 
+    expect(await screen.findByText('Showing 1–1 of 1 products')).toBeInTheDocument();
     expect(screen.getByText('Standing Desk')).toBeInTheDocument();
-    expect(screen.queryByText('Wireless Mouse')).not.toBeInTheDocument();
   });
 
   it('shows "No products found" when nothing matches', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
     renderApp();
     await screen.findByText('Wireless Mouse');
 
@@ -82,11 +84,10 @@ describe('App (storefront)', () => {
       target: { value: 'laptop' }
     });
 
-    expect(screen.getByText('No products found')).toBeInTheDocument();
+    expect(await screen.findByText('No products found')).toBeInTheDocument();
   });
 
   it('updates the cart count when Add to cart is clicked', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
     renderApp();
     await screen.findByText('Wireless Mouse');
 
@@ -97,19 +98,18 @@ describe('App (storefront)', () => {
   });
 
   it('shows an error message when the Catalog API call fails', async () => {
-    global.fetch.mockResolvedValue({ ok: false, status: 503 });
+    global.fetch = vi.fn(() => Promise.resolve({ ok: false, status: 503, json: async () => ({}) }));
     renderApp();
     expect(await screen.findByRole('alert')).toBeInTheDocument();
   });
 
   it('opens the product details page when a product name is clicked', async () => {
-    global.fetch.mockResolvedValue({ ok: true, json: async () => sampleResponse });
     renderApp();
     await screen.findByText('Wireless Mouse');
 
     fireEvent.click(screen.getByRole('link', { name: 'Standing Desk' }));
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Standing Desk' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Standing Desk' })).toBeInTheDocument();
     expect(screen.getByText('₹5,199.00')).toBeInTheDocument();
   });
 });

@@ -2,23 +2,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App.jsx';
+import { fakeFetch } from './fakeApi.js';
 
-const products = [
-  { id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599 },
-  { id: 2, name: 'Clean Code', category: 'Books', price: 499 }
-];
+const mouse = { id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599, imageUrl: null };
+const book = { id: 4, name: 'Clean Code', category: 'Books', price: 499, imageUrl: null };
 
-// Products API + a logged-in user ("test-token" saved below)
-function fakeFetch(url) {
-  const reply = (status, body) => Promise.resolve({ ok: status < 400, status, json: async () => body });
-  if (url.endsWith('/catalog-api/products')) return reply(200, { products });
-  if (url.endsWith('/api/auth/me')) return reply(200, { id: 1, username: 'krishna' });
-  return reply(404, {});
-}
-
-// Open the site at a URL, with a cart already saved in the browser
+// Open the site at a URL, with a cart already saved in the browser.
+// cart = { productId: quantity } for short; turned into the saved format here.
 function renderWithCart(url, cart) {
-  localStorage.setItem('krconnects_cart', JSON.stringify(cart));
+  const saved = {};
+  for (const [id, quantity] of Object.entries(cart)) {
+    saved[id] = { product: [mouse, book].find((p) => p.id === Number(id)), quantity };
+  }
+  localStorage.setItem('krconnects_cart', JSON.stringify(saved));
+
   return render(
     <MemoryRouter initialEntries={[url]}>
       <App />
@@ -58,7 +55,7 @@ describe('CartPage', () => {
   });
 
   it('charges ₹49 delivery for small orders', async () => {
-    renderWithCart('/cart', { 2: 1 });   // 499 -> + 49 = 548
+    renderWithCart('/cart', { 4: 1 });   // 499 -> + 49 = 548
 
     expect(await screen.findByText('₹49.00')).toBeInTheDocument();
     expect(screen.getByText('₹548.00')).toBeInTheDocument();
@@ -90,7 +87,16 @@ describe('CartPage', () => {
 
     fireEvent.click(screen.getAllByRole('button', { name: 'Add to cart' })[0]);
 
-    expect(JSON.parse(localStorage.getItem('krconnects_cart'))).toEqual({ 1: 1 });
+    const saved = JSON.parse(localStorage.getItem('krconnects_cart'));
+    expect(saved[1].quantity).toBe(1);
+    expect(saved[1].product.name).toBe('Wireless Mouse');
+  });
+
+  it('ignores a cart saved in an old format', async () => {
+    localStorage.setItem('krconnects_cart', JSON.stringify({ 1: 2 }));   // old: { id: quantity }
+    render(<MemoryRouter initialEntries={['/cart']}><App /></MemoryRouter>);
+
+    expect(await screen.findByText('Your cart is empty')).toBeInTheDocument();
   });
 
   it('asks to log in before placing an order', async () => {

@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../utils/productUtils.js';
 import { FREE_DELIVERY_THRESHOLD, MAX_QUANTITY, getCartLines, getCartSummary } from '../utils/cartUtils.js';
+import ProductImage from '../components/ProductImage.jsx';
 
 // CartPage ( URL: /cart ) — items with quantity +/-, remove, and the order summary.
-function CartPage({ products, cartItems, currentUser, onQuantityChange, onRemove, onLoginClick, onPlaceOrder }) {
-  const lines = getCartLines(products, cartItems);
+function CartPage({ cartItems, currentUser, onQuantityChange, onRemove, onLoginClick, onPlaceOrder }) {
+  const lines = getCartLines(cartItems);
   const summary = getCartSummary(lines);
 
   // ----- Empty cart -----
@@ -33,8 +34,8 @@ function CartPage({ products, cartItems, currentUser, onQuantityChange, onRemove
         <ul className="cart-list">
           {lines.map(({ product, quantity, lineTotal }) => (
             <li key={product.id} className="cart-row">
-              <Link to={`/product/${product.id}`} className="cart-thumb" aria-hidden="true" tabIndex={-1}>
-                {product.name.charAt(0)}
+              <Link to={`/product/${product.id}`} className="cart-thumb-link" aria-hidden="true" tabIndex={-1}>
+                <ProductImage product={product} className="cart-thumb" />
               </Link>
 
               <div className="cart-info">

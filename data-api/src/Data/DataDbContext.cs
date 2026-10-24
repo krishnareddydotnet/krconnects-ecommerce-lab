@@ -40,6 +40,10 @@ public class DataDbContext : DbContext
             .HasMaxLength(50)
             .IsRequired();
 
+        modelBuilder.Entity<Product>()
+            .Property(p => p.ImageUrl)
+            .HasMaxLength(200);
+
         // Money: 10 digits in total, 2 after the decimal point (e.g. 12345678.99)
         modelBuilder.Entity<Product>()
             .Property(p => p.Price)

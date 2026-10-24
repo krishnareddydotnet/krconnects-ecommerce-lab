@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import { fetchProducts } from './services/catalogApiService.js';
+import { fetchCategories } from './services/catalogApiService.js';
 import { signup, login, fetchMe, getSavedToken, saveToken, clearToken } from './services/authApiService.js';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
@@ -12,7 +12,7 @@ import ProductDetailsPage from './pages/ProductDetailsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
 import CartPage from './pages/CartPage.jsx';
 import OrderConfirmationPage from './pages/OrderConfirmationPage.jsx';
-import { MAX_QUANTITY, loadCart, saveCart } from './utils/cartUtils.js';
+import { MAX_QUANTITY, loadCart, saveCart, toCartProduct } from './utils/cartUtils.js';
 
 // -----------------------------------------------------------------------
 // App = the whole site.
@@ -23,24 +23,25 @@ import { MAX_QUANTITY, loadCart, saveCart } from './utils/cartUtils.js';
 //     /cart         -> CartPage
 //     /order-confirmation -> OrderConfirmationPage
 //     anything else -> NotFoundPage
-// - Shared state (products, cart, user) lives here, so it is kept
-//   when the user moves between pages.
+// - Shared state (filters, page number, cart, user) lives here, so it is
+//   kept when the user moves between pages.
+// - Products are NOT all loaded here any more: each page asks the API
+//   for only what it shows (one page of products, or one product).
 // -----------------------------------------------------------------------
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ----- Product data from the Catalog API -----
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // ----- Category chips (loaded once from the Catalog API) -----
+  const [categories, setCategories] = useState(['All']);
 
   // ----- What the user has chosen on the home page -----
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchText, setSearchText] = useState('');
   const [sortBy, setSortBy] = useState('featured');
+  const [page, setPage] = useState(1);
 
-  // ----- Cart: { productId: quantity }, e.g. { 3: 2, 7: 1 } -----
+  // ----- Cart: { productId: { product, quantity } } -----
   // Starts from the cart saved in the browser, so a refresh keeps it.
   const [cartItems, setCartItems] = useState(() => loadCart());
 
@@ -56,13 +57,12 @@ function App() {
   const [toastMessage, setToastMessage] = useState('');
   const toastTimer = useRef(null);
 
-  // Load products ONCE when the site opens.
-  // Browser calls /catalog-api/products -> nginx -> catalog-api -> data-api -> Azure SQL
+  // Load the category list ONCE when the site opens.
+  // Browser calls /catalog-api/products/categories -> nginx -> catalog-api -> data-api -> Azure SQL
   useEffect(() => {
-    fetchProducts()
-      .then((list) => setProducts(list))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    fetchCategories()
+      .then((list) => setCategories(['All', ...list]))
+      .catch(() => setCategories(['All']));   // chips are optional; the product grid shows any error
   }, []);
 
   // Save the cart in the browser every time it changes
@@ -88,16 +88,31 @@ function App() {
     toastTimer.current = setTimeout(() => setToastMessage(''), 2000);
   }
 
-  // Typing in the header search always shows results on the home page
+  // Typing in the header search always shows results on the home page, from page 1
   function handleSearchChange(text) {
     setSearchText(text);
+    setPage(1);
     if (location.pathname !== '/') navigate('/');
+  }
+
+  // A new category or sort order also starts again from page 1
+  function handleCategoryChange(category) {
+    setSelectedCategory(category);
+    setPage(1);
+  }
+
+  function handleSortChange(sort) {
+    setSortBy(sort);
+    setPage(1);
   }
 
   // Add a quantity of a product to the cart (adds to what is already there, max 10)
   function handleAddToCart(product, quantity) {
-    const current = cartItems[product.id] || 0;
-    setCartItems({ ...cartItems, [product.id]: Math.min(MAX_QUANTITY, current + quantity) });
+    const current = cartItems[product.id] ? cartItems[product.id].quantity : 0;
+    setCartItems({
+      ...cartItems,
+      [product.id]: { product: toCartProduct(product), quantity: Math.min(MAX_QUANTITY, current + quantity) }
+    });
     showToast(quantity > 1
       ? `${quantity} × ${product.name} added to cart`
       : `${product.name} added to cart`);
@@ -111,7 +126,8 @@ function App() {
       setCartItems(updated);
       return;
     }
-    setCartItems({ ...cartItems, [productId]: Math.min(MAX_QUANTITY, quantity) });
+    const line = cartItems[productId];
+    setCartItems({ ...cartItems, [productId]: { ...line, quantity: Math.min(MAX_QUANTITY, quantity) } });
   }
 
   function handleRemoveFromCart(product) {
@@ -168,65 +184,54 @@ function App() {
   }
 
   // Total items in the cart = sum of all quantities
-  const cartCount = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
+  const cartCount = Object.values(cartItems).reduce((sum, line) => sum + line.quantity, 0);
 
-  // Main content: loading -> error -> the page for the current URL
-  let content;
-  if (loading) {
-    content = <p className="status">Loading products...</p>;
-  } else if (error) {
-    content = (
-      <p className="status error" role="alert">
-        Sorry, we couldn't load products right now. ({error})
-      </p>
-    );
-  } else {
-    content = (
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <HomePage
-              products={products}
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-              searchText={searchText}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              cartItems={cartItems}
-              onAddToCart={handleAddToCart}
-            />
-          }
-        />
-        <Route
-          path="/product/:id"
-          element={
-            <ProductDetailsPage
-              products={products}
-              onAddToCart={handleAddToCart}
-              onCategoryChange={setSelectedCategory}
-            />
-          }
-        />
-        <Route
-          path="/cart"
-          element={
-            <CartPage
-              products={products}
-              cartItems={cartItems}
-              currentUser={currentUser}
-              onQuantityChange={handleQuantityChange}
-              onRemove={handleRemoveFromCart}
-              onLoginClick={() => setOpenDialog('login')}
-              onPlaceOrder={handlePlaceOrder}
-            />
-          }
-        />
-        <Route path="/order-confirmation" element={<OrderConfirmationPage order={lastOrder} />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    );
-  }
+  // The page for the current URL (each page loads its own data)
+  const content = (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+            searchText={searchText}
+            sortBy={sortBy}
+            onSortChange={handleSortChange}
+            page={page}
+            onPageChange={setPage}
+            cartItems={cartItems}
+            onAddToCart={handleAddToCart}
+          />
+        }
+      />
+      <Route
+        path="/product/:id"
+        element={
+          <ProductDetailsPage
+            onAddToCart={handleAddToCart}
+            onCategoryChange={handleCategoryChange}
+          />
+        }
+      />
+      <Route
+        path="/cart"
+        element={
+          <CartPage
+            cartItems={cartItems}
+            currentUser={currentUser}
+            onQuantityChange={handleQuantityChange}
+            onRemove={handleRemoveFromCart}
+            onLoginClick={() => setOpenDialog('login')}
+            onPlaceOrder={handlePlaceOrder}
+          />
+        }
+      />
+      <Route path="/order-confirmation" element={<OrderConfirmationPage order={lastOrder} />} />
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
 
   return (
     <>

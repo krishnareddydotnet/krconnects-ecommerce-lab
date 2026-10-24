@@ -75,12 +75,44 @@ using (var scope = app.Services.CreateScope())
             );
         END");
 
-    // 3c. Load the 100 demo products, only if the table is empty
-    if (!db.Products.Any())
+    // 3c. Add the ImageUrl column if it is missing (table was created before images existed)
+    db.Database.ExecuteSqlRaw(@"
+        IF COL_LENGTH(N'dbo.Products', N'ImageUrl') IS NULL
+        BEGIN
+            ALTER TABLE dbo.Products ADD ImageUrl NVARCHAR(200) NULL;
+        END");
+
+    // 3d. Insert any demo product that is not in the table yet (matched by Name).
+    //     Safe to run on every start: existing rows are never changed or deleted.
+    var seedProducts = ProductSeedData.GetProducts();
+    var existingNames = db.Products.Select(p => p.Name).ToHashSet();
+    var missingProducts = seedProducts.Where(p => !existingNames.Contains(p.Name)).ToList();
+
+    if (missingProducts.Count > 0)
     {
-        db.Products.AddRange(ProductSeedData.GetProducts());
+        db.Products.AddRange(missingProducts);
         db.SaveChanges();
-        app.Logger.LogInformation("Seeded 100 demo products.");
+        app.Logger.LogInformation("Added {Count} demo products.", missingProducts.Count);
+    }
+
+    // 3e. Give older products (created before images existed) their image path
+    var imagePathByName = seedProducts.ToDictionary(p => p.Name, p => p.ImageUrl);
+    var productsWithoutImage = db.Products.Where(p => p.ImageUrl == null).ToList();
+    int updated = 0;
+
+    foreach (var product in productsWithoutImage)
+    {
+        if (imagePathByName.TryGetValue(product.Name, out string? imagePath))
+        {
+            product.ImageUrl = imagePath;
+            updated++;
+        }
+    }
+
+    if (updated > 0)
+    {
+        db.SaveChanges();
+        app.Logger.LogInformation("Set image path for {Count} products.", updated);
     }
 }
 

@@ -2,34 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../src/App.jsx';
-
-const KEY = '11111111-2222-3333-4444-555555555555';
-
-// Pretend to be nginx + the APIs: answer each fetch by its URL
-function fakeFetch(url, options = {}) {
-  const reply = (status, body) => Promise.resolve({ ok: status < 400, status, json: async () => body });
-  const body = options.body ? JSON.parse(options.body) : {};
-
-  if (url.endsWith('/catalog-api/products')) {
-    return reply(200, { products: [{ id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599 }] });
-  }
-  if (url.endsWith('/api/auth/signup')) {
-    return body.username === 'taken'
-      ? reply(409, { message: 'That username is already taken.' })
-      : reply(201, { username: body.username, userKey: KEY });
-  }
-  if (url.endsWith('/api/auth/login')) {
-    return body.userKey === KEY
-      ? reply(200, { token: 'test-token', username: body.username })
-      : reply(401, { message: 'Invalid username or user key.' });
-  }
-  if (url.endsWith('/api/auth/me')) {
-    return options.headers?.Authorization === 'Bearer test-token'
-      ? reply(200, { id: 1, username: 'krishna' })
-      : reply(401, {});
-  }
-  return reply(404, {});
-}
+import { fakeFetch, KEY } from './fakeApi.js';
 
 function renderApp() {
   return render(

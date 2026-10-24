@@ -1,23 +1,55 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { formatPrice, getSimilarProducts } from '../utils/productUtils.js';
+import { fetchProduct, fetchProductsPage } from '../services/catalogApiService.js';
+import { formatPrice } from '../utils/productUtils.js';
+import { MAX_QUANTITY } from '../utils/cartUtils.js';
+import ProductImage from '../components/ProductImage.jsx';
 
 // ProductDetailsPage ( URL: /product/:id ) — one product with quantity + Add to cart,
 // and "Similar products" from the same category underneath.
-function ProductDetailsPage({ products, onAddToCart, onCategoryChange }) {
+// The product is loaded from the API by its id: GET /catalog-api/products/{id}
+function ProductDetailsPage({ onAddToCart, onCategoryChange }) {
   const { id } = useParams();               // "3" from /product/3 (always a string)
+  const [product, setProduct] = useState(null);
+  const [similarProducts, setSimilarProducts] = useState([]);
+  const [status, setStatus] = useState('loading');   // 'loading' | 'ready' | 'not-found' | 'error'
   const [quantity, setQuantity] = useState(1);
 
-  // Opening another product: go back to the top of the page and reset quantity to 1
+  // Load the product (and its similar products) whenever the id in the URL changes
   useEffect(() => {
+    let ignore = false;
     window.scrollTo(0, 0);
     setQuantity(1);
+    setStatus('loading');
+
+    fetchProduct(id)
+      .then((data) => {
+        if (ignore) return;
+        setProduct(data);
+        setStatus('ready');
+
+        // 5 from the same category; drop this product and keep 4
+        return fetchProductsPage({ page: 1, pageSize: 5, category: data.category }).then((page) => {
+          if (!ignore) setSimilarProducts(page.items.filter((p) => p.id !== data.id).slice(0, 4));
+        });
+      })
+      .catch((err) => {
+        if (!ignore) setStatus(err.status === 404 || err.status === 400 ? 'not-found' : 'error');
+      });
+
+    return () => { ignore = true; };
   }, [id]);
 
-  const product = products.find((p) => p.id === Number(id));
+  if (status === 'loading') {
+    return <p className="status">Loading product...</p>;
+  }
+
+  if (status === 'error') {
+    return <p className="status error" role="alert">Sorry, we couldn't load this product right now.</p>;
+  }
 
   // Wrong id in the URL (e.g. /product/999)
-  if (!product) {
+  if (status === 'not-found') {
     return (
       <div className="empty">
         <h2>Product not found</h2>
@@ -26,8 +58,6 @@ function ProductDetailsPage({ products, onAddToCart, onCategoryChange }) {
       </div>
     );
   }
-
-  const similarProducts = getSimilarProducts(products, product);
 
   return (
     <>
@@ -41,14 +71,13 @@ function ProductDetailsPage({ products, onAddToCart, onCategoryChange }) {
       </nav>
 
       <section className="details">
-        {/* Placeholder image until we have real product images */}
-        <div className="details-image" aria-hidden="true">{product.name.charAt(0)}</div>
+        <ProductImage product={product} className="details-image" />
 
         <div className="details-info">
           <span className="tag">{product.category}</span>
           <h1>{product.name}</h1>
           <p className="details-price">{formatPrice(product.price)}</p>
-          <p className="details-note">Free delivery in 3–5 days · Product ID {product.id}</p>
+          <p className="details-note">Free delivery above ₹999 · Product ID {product.id}</p>
 
           <div className="details-actions">
             {/* Quantity: between 1 and 10 */}
@@ -57,7 +86,7 @@ function ProductDetailsPage({ products, onAddToCart, onCategoryChange }) {
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
               <span aria-live="polite">{quantity}</span>
               <button type="button" aria-label="Increase quantity"
-                onClick={() => setQuantity(Math.min(10, quantity + 1))}>+</button>
+                onClick={() => setQuantity(Math.min(MAX_QUANTITY, quantity + 1))}>+</button>
             </div>
             <button type="button" className="btn btn-primary details-add"
               onClick={() => onAddToCart(product, quantity)}>
@@ -73,7 +102,7 @@ function ProductDetailsPage({ products, onAddToCart, onCategoryChange }) {
           <div className="similar-grid">
             {similarProducts.map((p) => (
               <Link key={p.id} to={`/product/${p.id}`} className="similar-card">
-                <div className="similar-image" aria-hidden="true">{p.name.charAt(0)}</div>
+                <ProductImage product={p} className="similar-image" />
                 <span className="similar-name">{p.name}</span>
                 <span className="similar-price">{formatPrice(p.price)}</span>
               </Link>

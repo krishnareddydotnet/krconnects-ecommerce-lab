@@ -8,6 +8,9 @@ namespace DataApi.Controllers;
 /// CRUD endpoints for products.
 ///   GET    /products               -> list all products
 ///   GET    /products?search=desk   -> list products whose name or category contains "desk"
+///   GET    /products/paged?page=1&pageSize=24&search=&category=&sort=
+///                                  -> one page of products + total count
+///   GET    /products/categories    -> list of categories
 ///   GET    /products/{id}          -> one product
 ///   POST   /products               -> create product
 ///   PUT    /products/{id}          -> update product
@@ -29,6 +32,26 @@ public class ProductsController : ControllerBase
     {
         var products = await _productService.GetAllAsync(search);
         return Ok(products);
+    }
+
+    // sort: featured (default) | price-asc | price-desc | name-asc
+    [HttpGet("paged")]
+    public async Task<IActionResult> GetPage(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 24,
+        [FromQuery] string? search = null,
+        [FromQuery] string? category = null,
+        [FromQuery] string? sort = null)
+    {
+        var result = await _productService.GetPageAsync(page, pageSize, search, category, sort);
+        return Ok(result);
+    }
+
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetCategories()
+    {
+        var categories = await _productService.GetCategoriesAsync();
+        return Ok(categories);
     }
 
     [HttpGet("{id:int}")]

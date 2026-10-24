@@ -1,7 +1,7 @@
 import ProductCard from './ProductCard.jsx';
 
 // ProductGrid: renders one ProductCard per product.
-// cartItems looks like { 3: 2, 7: 1 }  (product id -> quantity)
+// cartItems looks like { 3: { product, quantity: 2 } }  (product id -> cart line)
 function ProductGrid({ products, cartItems, onAddToCart }) {
   return (
     <div className="grid">
@@ -9,7 +9,7 @@ function ProductGrid({ products, cartItems, onAddToCart }) {
         <ProductCard
           key={product.id}
           product={product}
-          isAdded={cartItems[product.id] > 0}
+          isAdded={Boolean(cartItems[product.id])}
           onAddToCart={onAddToCart}
         />
       ))}

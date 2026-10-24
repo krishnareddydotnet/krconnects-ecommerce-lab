@@ -257,3 +257,24 @@ a.card-image { text-decoration: none; }
   .cart-line-total { width: auto; margin-left: auto; }
   .header-actions .welcome { display: none; }
 }
+
+/* ---------- Product images (photo, or first letter as fallback) ---------- */
+img.card-image, img.details-image, img.similar-image, img.cart-thumb { width: 100%; object-fit: cover; display: block; }
+img.card-image { height: 170px; }
+img.details-image { aspect-ratio: 1 / 1; max-height: 460px; }
+img.similar-image { height: 110px; }
+img.cart-thumb { width: 64px; height: 64px; }
+.card-image-link, .cart-thumb-link { display: block; text-decoration: none; }
+
+/* ---------- Pagination ---------- */
+.pagination { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 8px; }
+.page-btn {
+  min-width: 44px; height: 44px; padding: 0 14px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border-strong); background: #FFFFFF; color: var(--text); font-size: 15px; font-weight: 500;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.page-btn[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+.page-btn:disabled { color: #9CA3AF; cursor: not-allowed; }
+.page-btn:focus-visible { outline: 3px solid #A5B4FC; outline-offset: 2px; }
+.page-gap { color: var(--muted); padding: 0 4px; }
+.is-loading { opacity: 0.5; transition: opacity 0.15s ease; }

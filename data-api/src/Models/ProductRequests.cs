@@ -16,4 +16,8 @@ public class ProductRequest
 
     [Range(typeof(decimal), "0", "10000000")]
     public decimal Price { get; set; }
+
+    // Optional image path, e.g. "products/laptop-stand.webp"
+    [StringLength(200)]
+    public string? ImageUrl { get; set; }
 }

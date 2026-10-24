@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { formatPrice } from '../utils/productUtils.js';
+import ProductImage from './ProductImage.jsx';
 
 // ProductCard: one product in the grid.
 // Clicking the image or the name opens the product details page (/product/:id).
@@ -9,9 +10,9 @@ function ProductCard({ product, isAdded, onAddToCart }) {
 
   return (
     <article className="card">
-      {/* Placeholder image: first letter of the name (until we have real images) */}
-      <Link to={detailsUrl} className="card-image" aria-hidden="true" tabIndex={-1}>
-        {product.name.charAt(0)}
+      {/* Product photo (or first letter if there is no image) */}
+      <Link to={detailsUrl} className="card-image-link" tabIndex={-1} aria-hidden="true">
+        <ProductImage product={product} className="card-image" />
       </Link>
 
       <div className="card-body">
