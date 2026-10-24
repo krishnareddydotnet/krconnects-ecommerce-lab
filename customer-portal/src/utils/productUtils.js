@@ -37,3 +37,11 @@ export function getVisibleProducts(products, selectedCategory, searchText, sortB
 
   return list;
 }
+
+// Products in the same category as the given product (not the product itself).
+// Used for "Similar products" on the product details page.
+export function getSimilarProducts(products, product, count = 4) {
+  return products
+    .filter((p) => p.category === product.category && p.id !== product.id)
+    .slice(0, count);
+}

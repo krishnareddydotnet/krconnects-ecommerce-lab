@@ -1,12 +1,14 @@
+import { Link } from 'react-router-dom';
+
 // Header: logo, search box, login/sign up (or welcome + log out), cart button.
 function Header({ searchText, onSearchChange, currentUser, cartCount, onLoginClick, onSignupClick, onLogout }) {
   return (
     <header className="header">
       <div className="container header-inner">
-        <a href="/" className="logo" aria-label="KRConnects e-commerce home">
+        <Link to="/" className="logo" aria-label="KRConnects e-commerce home">
           <span>KR<span className="brand-accent">Connects</span></span>
           <span className="tagline">e-commerce</span>
-        </a>
+        </Link>
 
         {/* Search: every key press updates searchText in App */}
         <form className="search" role="search" onSubmit={(e) => e.preventDefault()}>

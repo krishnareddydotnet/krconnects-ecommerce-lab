@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatPrice, getCategories, getVisibleProducts } from '../src/utils/productUtils.js';
+import { formatPrice, getCategories, getVisibleProducts, getSimilarProducts } from '../src/utils/productUtils.js';
 
 const products = [
   { id: 1, name: 'Wireless Mouse', category: 'Electronics', price: 1599 },
@@ -38,5 +38,13 @@ describe('getVisibleProducts', () => {
   it('sorts by name A to Z', () => {
     const result = getVisibleProducts(products, 'All', '', 'name-asc');
     expect(result.map((p) => p.name)).toEqual(['Clean Code', 'Standing Desk', 'Wireless Mouse']);
+  });
+});
+
+describe('getSimilarProducts', () => {
+  it('returns other products in the same category only', () => {
+    const list = [...products, { id: 4, name: 'Bookshelf', category: 'Furniture', price: 5599 }];
+    const result = getSimilarProducts(list, list[1]); // Standing Desk
+    expect(result.map((p) => p.id)).toEqual([4]);
   });
 });
