@@ -1,0 +1,19 @@
+# Who may call customer-portal?
+# Only the Istio ingress gateway (all user traffic must come through the gateway).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: customer-portal
+  namespace: default
+spec:
+  # Apply this policy ONLY to customer-portal pods.
+  # (app.kubernetes.io/name is "ecommerce" on all 4 services, so we use "instance")
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: customer-portal
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        # Identity of the ingress gateway: cluster.local/ns/<namespace>/sa/<service-account>
+        principals: ["cluster.local/ns/istio-ingress/sa/istio-ingress"]

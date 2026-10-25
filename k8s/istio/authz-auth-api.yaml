@@ -1,0 +1,16 @@
+# Who may call auth-api?
+# Only customer-portal (its nginx forwards /api/... to auth-api for signup, login, me).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: auth-api
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: auth-api
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/customer-portal"]

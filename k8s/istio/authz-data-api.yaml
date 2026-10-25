@@ -1,0 +1,18 @@
+# Who may call data-api? (the only service with database access, so the most protected)
+# Only catalog-api (products) and auth-api (users). customer-portal must NOT call it directly.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: data-api
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: data-api
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals:
+        - "cluster.local/ns/default/sa/catalog-api"
+        - "cluster.local/ns/default/sa/auth-api"

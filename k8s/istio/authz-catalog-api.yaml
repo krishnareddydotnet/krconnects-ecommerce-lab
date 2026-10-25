@@ -1,0 +1,16 @@
+# Who may call catalog-api?
+# Only customer-portal (its nginx forwards /catalog-api/... to catalog-api).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: catalog-api
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: catalog-api
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/customer-portal"]
