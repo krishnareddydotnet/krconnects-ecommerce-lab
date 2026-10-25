@@ -9,7 +9,7 @@ image:
   pullPolicy: IfNotPresent
 
 service:
-  type: LoadBalancer   # exposed outside the cluster (browser access)
+  type: ClusterIP   # exposed outside the cluster (browser access)
   port: 8080           # also used as the containerPort by the chart
 
 livenessProbe:
