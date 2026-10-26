@@ -32,12 +32,6 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v6
 
-      - name: check id lengths (temporary)
-        run: |
-          echo "client length: ${#ARM_CLIENT_ID}"
-          echo "subscription length: ${#ARM_SUBSCRIPTION_ID}"
-          echo "tenant length: ${#ARM_TENANT_ID}"
-
       - name: setup terraform
         uses: hashicorp/setup-terraform@v4
         with:
@@ -45,5 +39,18 @@ jobs:
 
       - name: terraform init
         run: terraform init
+
+      - name: terraform format
+        run: terraform fmt -check
+
+      - name: terraform validate
+        run: terraform validate
+
+      - name: terraform plan
+        run: terraform plan
+
+      - name: terraform apply --auto approve
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
+        run: terraform apply --auto-approve
 
         
