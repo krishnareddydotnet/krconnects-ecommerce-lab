@@ -438,5 +438,4 @@ FodyWeavers.xsd
 *.tfstate.*
 *.tfvars
 *.tfplan
-
-/infra/
+tfplan
