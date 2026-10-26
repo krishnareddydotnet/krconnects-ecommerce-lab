@@ -477,3 +477,6 @@ resource "azurerm_role_assignment" "aks_admin" {
   role_definition_name = "Azure Kubernetes Service RBAC Cluster Admin"
   principal_id         = "69d8ab41-6beb-41f8-a9b6-2b605d3067d9"
 }
+
+
+#End of file
