@@ -383,8 +383,8 @@ resource "azurerm_monitor_action_group" "ag" {
   short_name          = "krcalerts" # max 12 characters, shown in SMS/email
 
   email_receiver {
-    name                    = "krishna"
-    email_address           = "<your-email>"
+    name                    = "krishnaReddy"
+    email_address           = "ckreddy3030.net@gmail.com"
     use_common_alert_schema = true
   }
 
