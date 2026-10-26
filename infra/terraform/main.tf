@@ -221,8 +221,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   network_profile {
     network_plugin      = "azure"
     network_plugin_mode = "overlay"
-    network_data_plane  = "cilium" # Cilium dataplane (eBPF)
-    network_policy      = "cilium" # Cilium enforces NetworkPolicies
+    network_data_plane  = "cilium"        # Cilium dataplane (eBPF)
+    network_policy      = "cilium"        # Cilium enforces NetworkPolicies
     pod_cidr            = "10.244.0.0/16" # pod IPs
     service_cidr        = "10.100.0.0/16" # ClusterIP service IPs
     dns_service_ip      = "10.100.0.10"   # must be inside service_cidr
