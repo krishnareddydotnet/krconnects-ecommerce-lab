@@ -12,10 +12,9 @@ on:
   workflow_dispatch:
 
 env:
-  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_CLIENT_ID: ${{ secrets.GITHUB_TOKEN }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.GITHUB_TOKEN }}
+  ARM_TENANT_ID: ${{ secrets.GITHUB_TOKEN }}
   ARM_USE_OIDC: true
   ARM_USE_AZUREAD: true
 
