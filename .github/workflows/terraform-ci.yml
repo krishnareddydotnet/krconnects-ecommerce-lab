@@ -32,6 +32,12 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v6
 
+      - name: check id lengths (temporary)
+        run: |
+          echo "client length: ${#ARM_CLIENT_ID}"
+          echo "subscription length: ${#ARM_SUBSCRIPTION_ID}"
+          echo "tenant length: ${#ARM_TENANT_ID}"
+
       - name: setup terraform
         uses: hashicorp/setup-terraform@v4
         with:
@@ -39,4 +45,5 @@ jobs:
 
       - name: terraform init
         run: terraform init
+
         
