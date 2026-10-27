@@ -1,0 +1,17 @@
+# Only the AKS add-on ingress gateway may call customer-portal
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: customer-portal-allow
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: customer-portal
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              # add-on gateway identity (kind used: ns/istio-ingress/sa/istio-ingress)
+              - "cluster.local/ns/aks-istio-ingress/sa/aks-istio-ingressgateway-external"

@@ -1,0 +1,16 @@
+# Gateway: opens port 80 on the AKS Istio add-on external ingress gateway
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: krconnects-gateway
+  namespace: default
+spec:
+  selector:
+    istio: aks-istio-ingressgateway-external   # add-on gateway pod label (kind used: istio: ingress)
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"

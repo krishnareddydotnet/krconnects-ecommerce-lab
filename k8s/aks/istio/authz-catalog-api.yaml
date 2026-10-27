@@ -1,0 +1,16 @@
+# Only customer-portal may call catalog-api
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: catalog-api-allow
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: catalog-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/default/sa/customer-portal"

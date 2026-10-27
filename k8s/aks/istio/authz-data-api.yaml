@@ -1,0 +1,17 @@
+# Only catalog-api and auth-api may call data-api (customer-portal and the gateway cannot)
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: data-api-allow
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: data-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/default/sa/catalog-api"
+              - "cluster.local/ns/default/sa/auth-api"

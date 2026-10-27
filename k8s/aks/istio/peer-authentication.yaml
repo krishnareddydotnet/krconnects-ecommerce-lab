@@ -1,0 +1,10 @@
+# STRICT mTLS for every pod in the default namespace (AKS Istio add-on)
+# Plain-text (non-mesh) traffic to these pods is rejected
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: default
+spec:
+  mtls:
+    mode: STRICT

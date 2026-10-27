@@ -1,0 +1,17 @@
+# VirtualService: route all traffic from the gateway to customer-portal
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: krconnects-virtualservice
+  namespace: default
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - krconnects-gateway
+  http:
+    - route:
+        - destination:
+            host: customer-portal
+            port:
+              number: 8080

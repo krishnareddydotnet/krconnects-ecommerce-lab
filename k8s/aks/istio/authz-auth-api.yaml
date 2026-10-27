@@ -1,0 +1,16 @@
+# Only customer-portal may call auth-api
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: auth-api-allow
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: auth-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/default/sa/customer-portal"
