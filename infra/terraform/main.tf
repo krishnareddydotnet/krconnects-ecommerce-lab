@@ -279,6 +279,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   # Subnet permission must exist before the cluster is created
   depends_on = [azurerm_role_assignment.aks_subnet_network_contributor]
+
+  # The cluster autoscaler changes the node count at runtime; Terraform must not report it as drift
+  lifecycle {
+    ignore_changes = [default_node_pool[0].node_count]
+  }
 }
 
 # Nodes (kubelet identity) may pull images from ACR, no imagePullSecrets needed
@@ -304,6 +309,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "userpool" {
   max_count             = 3
   tags = {
     environment = "dev"
+  }
+
+  # The cluster autoscaler changes the node count at runtime; Terraform must not report it as drift
+  lifecycle {
+    ignore_changes = [node_count]
   }
 }
 
